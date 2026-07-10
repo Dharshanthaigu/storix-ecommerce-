@@ -31,3 +31,11 @@ jobs:
 
       - name: Build TypeScript
         run: npm run build
+    
+      - name: Run tests
+        run: npm test
+        env:
+          JWT_SECRET: test_secret_for_ci
+          RAZORPAY_WEBHOOK_SECRET: test_webhook_secret_for_ci
+          RAZORPAY_KEY_ID: rzp_test_dummy_key_for_ci
+          RAZORPAY_KEY_SECRET: dummy_secret_for_ci
