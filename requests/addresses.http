@@ -1,0 +1,35 @@
+// After creating this, in VS Code click the environment name in the bottom-right status bar 
+// (or Ctrl+Shift+P → "Rest Client: Switch Environment") and pick dev — that's what makes {{baseUrl}} etc. resolve.
+
+
+### Create Address (logged-in user)
+POST {{baseUrl}}/api/addresses
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "fullName": "Test User",
+  "phone": "9876543210",
+  "addressLine1": "123 Main Street",
+  "city": "Chennai",
+  "state": "Tamil Nadu",
+  "pincode": "600001",
+  "isDefault": true
+}
+
+### Get My Addresses
+GET {{baseUrl}}/api/addresses
+Authorization: Bearer {{userToken}}
+
+### Update Address
+PUT {{baseUrl}}/api/addresses/{{addressId}}
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "city": "Coimbatore"
+}
+
+### Delete Address
+DELETE {{baseUrl}}/api/addresses/{{addressId}}
+Authorization: Bearer {{userToken}}
