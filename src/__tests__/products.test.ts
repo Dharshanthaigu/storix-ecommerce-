@@ -4,6 +4,11 @@ import Category from "../models/Category";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
+jest.mock("../config/redisClient", () => ({
+  __esModule: true,
+  default: { del: jest.fn(), get: jest.fn().mockResolvedValue(null), set: jest.fn() },
+}));
+
 async function createTokenForRole(role: "user" | "admin") {
   const userId = new mongoose.Types.ObjectId().toString();
   return jwt.sign({ userId, role }, process.env.JWT_SECRET as string, { expiresIn: "1h" });
