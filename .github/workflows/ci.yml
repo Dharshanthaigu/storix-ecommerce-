@@ -1,11 +1,12 @@
 name: CI
-
 on:
   push:
     branches: [main, dev]
   pull_request:
     branches: [main]
-
+defaults:
+  run:
+    working-directory: storix-backend
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -20,21 +21,17 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
-      - name: Install dependencies
-        run: npm ci
-      - name: Run tests
-        run: npm test
+          cache-dependency-path: storix-backend/package-lock.json
+      - run: npm ci
+      - run: npm test
         env:
           JWT_SECRET: test_secret_for_ci
           RAZORPAY_WEBHOOK_SECRET: test_webhook_secret_for_ci
           RAZORPAY_KEY_ID: rzp_test_dummy_key_for_ci
           RAZORPAY_KEY_SECRET: dummy_secret_for_ci
-      - name: Build TypeScript
-        run: npm run build
+      - run: npm run build
