@@ -3,15 +3,7 @@ import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchMyOrders } from "../features/orders/orderSlice";
 import Loader from "../components/Loader";
-
-const statusColor: Record<string, string> = {
-  pending: "text-yellow-600",
-  paid: "text-blue-600",
-  shipped: "text-purple-600",
-  delivered: "text-green-600",
-  cancelled: "text-red-600",
-  refunded: "text-gray-500",
-};
+import StatusRail from "../components/StatusRail";
 
 export default function OrderHistory() {
   const dispatch = useAppDispatch();
@@ -25,33 +17,42 @@ export default function OrderHistory() {
 
   if (myOrders.length === 0) {
     return (
-      <div className="p-8 text-center">
-        <p className="text-gray-500 mb-4">No orders yet.</p>
-        <Link to="/" className="underline">Start shopping</Link>
+      <div className="max-w-6xl mx-auto px-6 py-24 text-center">
+        <p className="font-display text-2xl mb-2">No orders yet</p>
+        <p className="text-slate mb-6">Everything you buy will show up here.</p>
+        <Link to="/" className="text-signal font-medium hover:underline">
+          Start shopping →
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-xl font-semibold mb-4">My Orders</h1>
+    <div className="max-w-3xl mx-auto px-6 py-10">
+      <h1 className="font-display text-3xl font-bold mb-8">Your orders</h1>
+
       <div className="flex flex-col gap-3">
         {myOrders.map((order) => (
           <Link
             key={order._id}
             to={`/orders/${order._id}`}
-            className="border rounded p-4 flex justify-between items-center hover:shadow-sm"
+            className="block border border-mist rounded-xl p-4 hover:border-slate transition-colors"
           >
-            <div>
-              <p className="font-medium">Order #{order._id.slice(-8)}</p>
-              <p className="text-sm text-gray-500">
-                {new Date(order.createdAt).toLocaleDateString()} · {order.items.length} item(s)
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="font-semibold">₹{order.total}</p>
-              <p className={`text-sm capitalize ${statusColor[order.status] ?? ""}`}>{order.status}</p>
-            </div>
+            <StatusRail status={order.status}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-data text-sm text-slate">#{order._id.slice(-8).toUpperCase()}</p>
+                  <p className="text-sm text-slate mt-0.5">
+                    {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                    {" · "}{order.items.length} item{order.items.length !== 1 ? "s" : ""}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-data font-medium">₹{order.total.toLocaleString("en-IN")}</p>
+                  <p className="text-xs capitalize text-slate mt-0.5">{order.status}</p>
+                </div>
+              </div>
+            </StatusRail>
           </Link>
         ))}
       </div>

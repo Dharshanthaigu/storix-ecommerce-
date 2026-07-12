@@ -6,7 +6,7 @@ export default function Navbar() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const user = useAppSelector((s) => s.auth.user);
-  const cartCount = useAppSelector((s) => s.cart.items.length);
+  const cartCount = useAppSelector((s) => s.cart.items.reduce((n, i) => n + i.qty, 0));
 
   const handleLogout = () => {
     dispatch(logout());
@@ -14,24 +14,57 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex items-center justify-between px-4 py-3 border-b">
-      <Link to="/" className="font-semibold text-lg">Storix</Link>
-      <div className="flex items-center gap-4">
-        <Link to="/cart">Cart ({cartCount})</Link>
-        {user ? (
-          <>
-            <Link to="/orders">My Orders</Link>
-            <Link to="/addresses">Addresses</Link>
-            {user.role === "admin" && <Link to="/admin">Admin</Link>}
-            <span className="text-sm text-gray-500">{user.name}</span>
-            <button onClick={handleLogout} className="text-sm underline">Logout</button>
-          </>
-        ) : (
-          <>
-            <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
-          </>
-        )}
+    <nav className="sticky top-0 z-40 bg-paper/90 backdrop-blur border-b border-mist">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <Link to="/" className="font-display font-bold text-xl tracking-tight">
+          STORIX
+        </Link>
+
+        <div className="flex items-center gap-6 text-sm">
+          {user?.role === "admin" && (
+            <Link to="/admin" className="text-slate hover:text-ink transition-colors">
+              Admin
+            </Link>
+          )}
+          {user && (
+            <>
+              <Link to="/orders" className="text-slate hover:text-ink transition-colors">
+                Orders
+              </Link>
+              <Link to="/addresses" className="text-slate hover:text-ink transition-colors">
+                Addresses
+              </Link>
+            </>
+          )}
+
+          <Link
+            to="/cart"
+            className="relative flex items-center gap-1.5 text-slate hover:text-ink transition-colors"
+          >
+            Cart
+            {cartCount > 0 && (
+              <span className="font-data text-xs bg-signal text-white rounded-full h-5 min-w-5 px-1 flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+          </Link>
+
+          {user ? (
+            <button
+              onClick={handleLogout}
+              className="text-sm border border-mist rounded-full px-4 py-1.5 hover:border-ink transition-colors"
+            >
+              Sign out
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="text-sm bg-ink text-white rounded-full px-4 py-1.5 hover:bg-signal transition-colors"
+            >
+              Sign in
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   );

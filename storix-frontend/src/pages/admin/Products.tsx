@@ -2,10 +2,10 @@ import { useEffect, useState, type FormEvent } from "react";
 import toast from "react-hot-toast";
 import { productApi } from "../../api/productApi";
 import { categoryApi } from "../../api/categoryApi";
-import type { Product, Category, ProductInput } from "../../types/index";
-import Loader from "../../components/Loader";
+import type { Product, Category, ProductInput } from "../../types";
 import { getErrorMessage } from "../../utils/errorMessage";
-
+import Loader from "../../components/Loader";
+import StatusRail from "../../components/StatusRail";
 
 const emptyForm = { name: "", description: "", price: "", stock: "", category: "", images: "" };
 
@@ -49,8 +49,6 @@ export default function AdminProducts() {
       price: Number(form.price),
       stock: Number(form.stock),
       category: form.category,
-      // Comma-separated URLs for now — swap for real multipart upload once
-      // your productController exposes an /upload endpoint (e.g. S3/Cloudinary).
       images: form.images.split(",").map((s) => s.trim()).filter(Boolean),
     };
     try {
@@ -81,109 +79,71 @@ export default function AdminProducts() {
     setShowForm(true);
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await productApi.remove(id);
-      toast.success("Product removed");
-      load();
-    } catch {
-      toast.error("Could not remove product");
-    }
-  };
-
   if (loading) return <Loader />;
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-semibold">Products</h1>
+    <div className="max-w-4xl mx-auto px-6 py-10">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-display text-3xl font-bold">Products</h1>
         {!showForm && (
-          <button onClick={() => setShowForm(true)} className="bg-black text-white px-3 py-1.5 rounded text-sm">
-            Add Product
+          <button onClick={() => setShowForm(true)} className="text-sm bg-ink text-white rounded-full px-4 py-2 hover:bg-signal transition-colors">
+            Add product
           </button>
         )}
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="border rounded p-4 mb-6 flex flex-col gap-2">
-          <input
-            required
-            placeholder="Name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="border rounded px-3 py-2"
-          />
-          <textarea
-            required
-            placeholder="Description"
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="border rounded px-3 py-2"
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              required
-              type="number"
-              min={0}
-              placeholder="Price"
-              value={form.price}
-              onChange={(e) => setForm({ ...form, price: e.target.value })}
-              className="border rounded px-3 py-2"
-            />
-            <input
-              required
-              type="number"
-              min={0}
-              placeholder="Stock"
-              value={form.stock}
-              onChange={(e) => setForm({ ...form, stock: e.target.value })}
-              className="border rounded px-3 py-2"
-            />
+        <form onSubmit={handleSubmit} className="border border-mist rounded-xl p-5 mb-8 grid gap-3">
+          <input required placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink" />
+          <textarea required placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink" />
+          <div className="grid grid-cols-2 gap-3">
+            <input required type="number" min={0} placeholder="Price" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink font-data" />
+            <input required type="number" min={0} placeholder="Stock" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink font-data" />
           </div>
-          <select
-            required
-            value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-            className="border rounded px-3 py-2"
-          >
+          <select required value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink">
             <option value="">Select category</option>
-            {categories.map((c) => (
-              <option key={c._id} value={c._id}>{c.name}</option>
-            ))}
+            {categories.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
           </select>
-          <input
-            placeholder="Image URLs, comma-separated"
-            value={form.images}
-            onChange={(e) => setForm({ ...form, images: e.target.value })}
-            className="border rounded px-3 py-2"
-          />
-          <div className="flex gap-2 mt-2">
-            <button type="submit" className="bg-black text-white px-4 py-2 rounded">
+          <input placeholder="Image URLs, comma-separated" value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink" />
+          <div className="flex gap-2 mt-1">
+            <button type="submit" className="bg-ink text-white rounded-full px-5 py-2 text-sm hover:bg-signal transition-colors">
               {editingId ? "Update" : "Save"}
             </button>
-            <button type="button" onClick={resetForm} className="border px-4 py-2 rounded">
+            <button type="button" onClick={resetForm} className="border border-mist rounded-full px-5 py-2 text-sm hover:border-slate">
               Cancel
             </button>
           </div>
         </form>
       )}
 
-      <div className="flex flex-col gap-2">
-        {products.map((p) => (
-          <div key={p._id} className="border rounded p-3 flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <img src={p.images?.[0]} alt={p.name} className="w-12 h-12 object-cover rounded" />
-              <div>
-                <p className="font-medium">{p.name}</p>
-                <p className="text-sm text-gray-500">₹{p.price} · stock {p.stock}</p>
-              </div>
+      <div className="border border-mist rounded-xl divide-y divide-mist">
+        {products.map((p) => {
+          const stockStatus = p.stock === 0 ? "out-of-stock" : p.stock <= 5 ? "low-stock" : "in-stock";
+          return (
+            <div key={p._id} className="px-4 py-3">
+              <StatusRail status={stockStatus}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img src={p.images?.[0]} alt={p.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{p.name}</p>
+                      <p className="font-data text-xs text-slate">₹{p.price.toLocaleString("en-IN")} · {p.stock} in stock</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4 text-xs shrink-0">
+                    <button onClick={() => handleEdit(p)} className="text-slate hover:text-ink font-medium">Edit</button>
+                    <button
+                      onClick={async () => { await productApi.remove(p._id); toast.success("Removed"); load(); }}
+                      className="text-slate hover:text-danger font-medium"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </StatusRail>
             </div>
-            <div className="flex gap-3 text-sm">
-              <button onClick={() => handleEdit(p)} className="underline">Edit</button>
-              <button onClick={() => handleDelete(p._id)} className="text-red-600 underline">Delete</button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

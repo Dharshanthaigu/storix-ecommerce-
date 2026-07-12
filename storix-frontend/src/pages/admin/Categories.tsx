@@ -46,66 +46,51 @@ export default function AdminCategories() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await categoryApi.remove(id);
-      toast.success("Category removed");
-      load();
-    } catch {
-      toast.error("Could not remove category");
-    }
-  };
-
   if (loading) return <Loader />;
 
   return (
-    <div className="p-4 max-w-xl mx-auto">
-      <h1 className="text-xl font-semibold mb-4">Categories</h1>
+    <div className="max-w-2xl mx-auto px-6 py-10">
+      <h1 className="font-display text-3xl font-bold mb-8">Categories</h1>
 
-      <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
+      <form onSubmit={handleSubmit} className="flex gap-2 mb-8">
         <input
           placeholder="Category name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="border rounded px-3 py-2 flex-1"
+          className="flex-1 border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink"
         />
-        <button type="submit" className="bg-black text-white px-4 py-2 rounded">
+        <button type="submit" className="bg-ink text-white rounded-full px-5 py-2 text-sm hover:bg-signal transition-colors">
           {editingId ? "Update" : "Add"}
         </button>
         {editingId && (
           <button
             type="button"
-            onClick={() => {
-              setEditingId(null);
-              setName("");
-            }}
-            className="border px-4 py-2 rounded"
+            onClick={() => { setEditingId(null); setName(""); }}
+            className="border border-mist rounded-full px-5 py-2 text-sm hover:border-slate"
           >
             Cancel
           </button>
         )}
       </form>
 
-      <div className="flex flex-col gap-2">
+      <div className="border border-mist rounded-xl divide-y divide-mist">
         {categories.map((c) => (
-          <div key={c._id} className="border rounded p-3 flex justify-between items-center">
-            <span>{c.name}</span>
-            <div className="flex gap-3 text-sm">
-              <button
-                onClick={() => {
-                  setEditingId(c._id);
-                  setName(c.name);
-                }}
-                className="underline"
-              >
+          <div key={c._id} className="flex items-center justify-between px-4 py-3">
+            <span className="text-sm">{c.name}</span>
+            <div className="flex gap-4 text-xs">
+              <button onClick={() => { setEditingId(c._id); setName(c.name); }} className="text-slate hover:text-ink font-medium">
                 Edit
               </button>
-              <button onClick={() => handleDelete(c._id)} className="text-red-600 underline">
+              <button
+                onClick={async () => { await categoryApi.remove(c._id); toast.success("Removed"); load(); }}
+                className="text-slate hover:text-danger font-medium"
+              >
                 Delete
               </button>
             </div>
           </div>
         ))}
+        {categories.length === 0 && <p className="text-slate text-sm px-4 py-6">No categories yet.</p>}
       </div>
     </div>
   );

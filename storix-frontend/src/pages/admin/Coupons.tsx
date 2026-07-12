@@ -44,15 +44,15 @@ export default function AdminCoupons() {
   if (loading) return <Loader />;
 
   return (
-    <div className="p-4 max-w-xl mx-auto">
-      <h1 className="text-xl font-semibold mb-4">Coupons</h1>
+    <div className="max-w-2xl mx-auto px-6 py-10">
+      <h1 className="font-display text-3xl font-bold mb-8">Coupons</h1>
 
-      <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
+      <form onSubmit={handleSubmit} className="flex gap-2 mb-8">
         <input
           placeholder="CODE"
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          className="border rounded px-3 py-2 flex-1"
+          className="flex-1 border border-mist rounded-lg px-3 py-2 text-sm font-data uppercase focus:outline-none focus:border-ink"
         />
         <input
           type="number"
@@ -61,19 +61,21 @@ export default function AdminCoupons() {
           placeholder="% off"
           value={discountPercent}
           onChange={(e) => setDiscountPercent(e.target.value)}
-          className="border rounded px-3 py-2 w-24"
+          className="w-24 border border-mist rounded-lg px-3 py-2 text-sm font-data focus:outline-none focus:border-ink"
         />
-        <button type="submit" className="bg-black text-white px-4 py-2 rounded">Create</button>
+        <button type="submit" className="bg-ink text-white rounded-full px-5 py-2 text-sm hover:bg-signal transition-colors">
+          Create
+        </button>
       </form>
 
-      <div className="flex flex-col gap-2">
+      <div className="border border-mist rounded-xl divide-y divide-mist">
         {coupons.map((c) => (
-          <div key={c._id} className="border rounded p-3 flex justify-between">
-            <span className="font-mono">{c.code}</span>
-            <span className="text-sm text-gray-500">{c.discountPercent}% off · used {c.usageCount}×</span>
+          <div key={c._id} className="flex items-center justify-between px-4 py-3">
+            <span className="font-data font-medium">{c.code}</span>
+            <span className="text-xs text-slate">{c.discountPercent}% off · used {c.usageCount}×</span>
           </div>
         ))}
-        {coupons.length === 0 && <p className="text-gray-500 text-sm">No coupons yet.</p>}
+        {coupons.length === 0 && <p className="text-slate text-sm px-4 py-6">No coupons yet.</p>}
       </div>
     </div>
   );

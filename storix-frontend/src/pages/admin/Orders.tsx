@@ -3,10 +3,9 @@ import toast from "react-hot-toast";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { fetchAllOrders, updateOrderStatus } from "../../features/orders/orderSlice";
 import Loader from "../../components/Loader";
+import StatusRail from "../../components/StatusRail";
 import type { OrderStatus } from "../../types";
 
-// Mirrors the state machine enforced server-side in orderController —
-// this is just the allowed next-step UI list, backend still validates transitions.
 const NEXT_STATUS: Record<OrderStatus, OrderStatus[]> = {
   pending: ["paid", "cancelled"],
   paid: ["shipped", "cancelled"],
@@ -28,58 +27,59 @@ export default function AdminOrders() {
   const handleStatusChange = async (id: string, newStatus: OrderStatus) => {
     try {
       await dispatch(updateOrderStatus({ id, status: newStatus })).unwrap();
-      toast.success(`Order marked as ${newStatus}`);
+      toast.success(`Marked as ${newStatus}`);
     } catch {
-      toast.error("Could not update order status");
+      toast.error("Could not update status");
     }
   };
 
   if (status === "loading") return <Loader />;
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <h1 className="text-xl font-semibold mb-4">Orders</h1>
+    <div className="max-w-4xl mx-auto px-6 py-10">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-display text-3xl font-bold">Orders</h1>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as OrderStatus | "")}
+          className="border border-mist rounded-full px-4 py-2 text-sm focus:outline-none focus:border-ink"
+        >
+          <option value="">All statuses</option>
+          {(["pending", "paid", "shipped", "delivered", "cancelled", "refunded"] as OrderStatus[]).map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+      </div>
 
-      <select
-        value={filter}
-        onChange={(e) => setFilter(e.target.value as OrderStatus | "")}
-        className="border rounded px-2 py-1 mb-4"
-      >
-        <option value="">All statuses</option>
-        {(["pending", "paid", "shipped", "delivered", "cancelled", "refunded"] as OrderStatus[]).map((s) => (
-          <option key={s} value={s}>{s}</option>
-        ))}
-      </select>
-
-      <div className="flex flex-col gap-2">
+      <div className="border border-mist rounded-xl divide-y divide-mist">
         {allOrders.map((order) => (
-          <div key={order._id} className="border rounded p-3 flex justify-between items-center">
-            <div>
-              <p className="font-medium">#{order._id.slice(-8)}</p>
-              <p className="text-sm text-gray-500">
-                {new Date(order.createdAt).toLocaleDateString()} · ₹{order.total}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm capitalize">{order.status}</span>
-              {NEXT_STATUS[order.status].length > 0 && (
-                <select
-                  defaultValue=""
-                  onChange={(e) => {
-                    if (e.target.value) handleStatusChange(order._id, e.target.value as OrderStatus);
-                  }}
-                  className="border rounded px-2 py-1 text-sm"
-                >
-                  <option value="" disabled>Update status</option>
-                  {NEXT_STATUS[order.status].map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              )}
-            </div>
+          <div key={order._id} className="px-4 py-3">
+            <StatusRail status={order.status}>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <p className="font-data text-sm">#{order._id.slice(-8).toUpperCase()}</p>
+                  <p className="text-xs text-slate">
+                    {new Date(order.createdAt).toLocaleDateString("en-IN")} · ₹{order.total.toLocaleString("en-IN")}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs capitalize font-medium">{order.status}</span>
+                  {NEXT_STATUS[order.status].length > 0 && (
+                    <select
+                      defaultValue=""
+                      onChange={(e) => e.target.value && handleStatusChange(order._id, e.target.value as OrderStatus)}
+                      className="border border-mist rounded-full px-3 py-1 text-xs focus:outline-none focus:border-ink"
+                    >
+                      <option value="" disabled>Update →</option>
+                      {NEXT_STATUS[order.status].map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  )}
+                </div>
+              </div>
+            </StatusRail>
           </div>
         ))}
-        {allOrders.length === 0 && <p className="text-gray-500 text-sm">No orders found.</p>}
+        {allOrders.length === 0 && <p className="text-slate text-sm px-4 py-6">No orders found.</p>}
       </div>
     </div>
   );

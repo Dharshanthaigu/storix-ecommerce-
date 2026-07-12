@@ -5,7 +5,12 @@ import { fetchOrderById } from "../features/orders/orderSlice";
 import Loader from "../components/Loader";
 import type { OrderStatus } from "../types";
 
-const STEPS: OrderStatus[] = ["pending", "paid", "shipped", "delivered"];
+const STEPS: { key: OrderStatus; label: string }[] = [
+  { key: "pending", label: "Placed" },
+  { key: "paid", label: "Paid" },
+  { key: "shipped", label: "Shipped" },
+  { key: "delivered", label: "Delivered" },
+];
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -19,63 +24,74 @@ export default function OrderDetail() {
 
   if (status === "loading" || !order) return <Loader />;
 
-  const currentStepIndex = STEPS.indexOf(order.status);
+  const currentStepIndex = STEPS.findIndex((s) => s.key === order.status);
   const isTerminalIssue = order.status === "cancelled" || order.status === "refunded";
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-xl font-semibold mb-1">Order #{order._id.slice(-8)}</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        Placed on {new Date(order.createdAt).toLocaleString()}
+    <div className="max-w-2xl mx-auto px-6 py-10">
+      <p className="font-data text-sm text-slate mb-1">#{order._id.slice(-8).toUpperCase()}</p>
+      <h1 className="font-display text-2xl font-bold mb-1">
+        {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+      </h1>
+      <p className="text-slate text-sm mb-8">
+        {new Date(order.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
       </p>
 
       {isTerminalIssue ? (
-        <p className="mb-6 font-medium text-red-600 capitalize">{order.status}</p>
-      ) : (
-        <div className="flex items-center mb-6">
-          {STEPS.map((step, i) => (
-            <div key={step} className="flex items-center flex-1">
-              <div
-                className={`h-3 w-3 rounded-full ${
-                  i <= currentStepIndex ? "bg-black" : "bg-gray-200"
-                }`}
-              />
-              {i < STEPS.length - 1 && (
-                <div className={`flex-1 h-0.5 ${i < currentStepIndex ? "bg-black" : "bg-gray-200"}`} />
-              )}
-            </div>
-          ))}
+        <div className="bg-mist rounded-xl p-4 mb-8 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-danger" />
+          <span className="font-medium capitalize">{order.status}</span>
         </div>
-      )}
-      {!isTerminalIssue && (
-        <div className="flex justify-between text-xs text-gray-500 mb-6 -mt-4">
-          {STEPS.map((step) => (
-            <span key={step} className="capitalize">{step}</span>
-          ))}
+      ) : (
+        <div className="mb-10">
+          <div className="flex items-center">
+            {STEPS.map((step, i) => (
+              <div key={step.key} className="flex items-center flex-1 last:flex-none">
+                <div
+                  className={`w-3 h-3 rounded-full shrink-0 ${
+                    i <= currentStepIndex ? "bg-signal" : "bg-mist"
+                  }`}
+                />
+                {i < STEPS.length - 1 && (
+                  <div className={`flex-1 h-px mx-1 ${i < currentStepIndex ? "bg-signal" : "bg-mist"}`} />
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between mt-2">
+            {STEPS.map((step, i) => (
+              <span
+                key={step.key}
+                className={`text-xs font-medium ${i <= currentStepIndex ? "text-ink" : "text-slate"}`}
+              >
+                {step.label}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
-      <h2 className="font-medium mb-2">Items</h2>
-      <div className="border rounded mb-4">
+      <h2 className="text-sm font-medium uppercase tracking-wide text-slate mb-3">Items</h2>
+      <div className="border border-mist rounded-xl p-4 mb-6 font-data text-sm">
         {order.items.map((item) => (
-          <div key={item.productId} className="flex justify-between px-3 py-2 border-b last:border-b-0 text-sm">
+          <div key={item.productId} className="flex justify-between py-1.5">
             <span>{item.name} × {item.qty}</span>
-            <span>₹{item.price * item.qty}</span>
+            <span>₹{(item.price * item.qty).toLocaleString("en-IN")}</span>
           </div>
         ))}
-        <div className="flex justify-between px-3 py-2 font-semibold">
+        <div className="flex justify-between pt-2 mt-2 border-t border-mist font-medium text-base">
           <span>Total</span>
-          <span>₹{order.total}</span>
+          <span>₹{order.total.toLocaleString("en-IN")}</span>
         </div>
       </div>
 
-      <h2 className="font-medium mb-2">Delivery Address</h2>
-      <p className="text-sm text-gray-600 mb-4">
-        {order.address?.line1}, {order.address?.city}, {order.address?.state} - {order.address?.pincode}
+      <h2 className="text-sm font-medium uppercase tracking-wide text-slate mb-3">Delivery address</h2>
+      <p className="text-sm text-slate leading-relaxed mb-6">
+        {order.address?.line1}, {order.address?.city}, {order.address?.state} – {order.address?.pincode}
       </p>
 
       <p className="text-sm">
-        Payment status: <span className="font-medium capitalize">{order.paymentStatus}</span>
+        Payment: <span className="font-medium capitalize">{order.paymentStatus}</span>
       </p>
     </div>
   );
