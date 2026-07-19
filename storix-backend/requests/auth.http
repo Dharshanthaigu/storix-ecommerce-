@@ -1,0 +1,34 @@
+// After creating this, in VS Code click the environment name in the bottom-right status bar 
+// (or Ctrl+Shift+P → "Rest Client: Switch Environment") and pick dev — that's what makes {{baseUrl}} etc. resolve.
+// baseurl or usertoken , admin token , categoryid , productid , ticketid , addressid in .vscode/settings.json
+
+### Register
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "Test@1234",
+  "phone": "9876543210"
+}
+
+### Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Test@1234"
+}
+
+### Login as Admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@storix.test",
+  "password": "Admin@1234"
+}
+
+
