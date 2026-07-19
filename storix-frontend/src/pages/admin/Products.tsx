@@ -21,8 +21,8 @@ export default function AdminProducts() {
     setLoading(true);
     try {
       const [prodRes, catRes] = await Promise.all([productApi.list(), categoryApi.list()]);
-      setProducts(prodRes.data.items);
-      setCategories(catRes.data);
+      setProducts(prodRes.data.products);
+      setCategories(catRes.data.category);
     } catch {
       toast.error("Could not load products");
     } finally {

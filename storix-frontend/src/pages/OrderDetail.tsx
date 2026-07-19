@@ -7,7 +7,7 @@ import type { OrderStatus } from "../types";
 
 const STEPS: { key: OrderStatus; label: string }[] = [
   { key: "pending", label: "Placed" },
-  { key: "paid", label: "Paid" },
+  { key: "processing", label: "Processing" },
   { key: "shipped", label: "Shipped" },
   { key: "delivered", label: "Delivered" },
 ];
@@ -73,21 +73,25 @@ export default function OrderDetail() {
 
       <h2 className="text-sm font-medium uppercase tracking-wide text-slate mb-3">Items</h2>
       <div className="border border-mist rounded-xl p-4 mb-6 font-data text-sm">
-        {order.items.map((item) => (
-          <div key={item.productId} className="flex justify-between py-1.5">
-            <span>{item.name} × {item.qty}</span>
-            <span>₹{(item.price * item.qty).toLocaleString("en-IN")}</span>
-          </div>
-        ))}
+        {order.items.map((item, idx) => {
+          const productName = typeof item.product === "string" ? "Product" : item.product.name;
+          const key = typeof item.product === "string" ? item.product : item.product._id;
+          return (
+            <div key={key ?? idx} className="flex justify-between py-1.5">
+              <span>{productName} × {item.quantity}</span>
+              <span>₹{(item.price * item.quantity).toLocaleString("en-IN")}</span>
+            </div>
+          );
+        })}
         <div className="flex justify-between pt-2 mt-2 border-t border-mist font-medium text-base">
           <span>Total</span>
-          <span>₹{order.total.toLocaleString("en-IN")}</span>
+          <span>₹{order.totalAmount.toLocaleString("en-IN")}</span>
         </div>
       </div>
 
       <h2 className="text-sm font-medium uppercase tracking-wide text-slate mb-3">Delivery address</h2>
       <p className="text-sm text-slate leading-relaxed mb-6">
-        {order.address?.line1}, {order.address?.city}, {order.address?.state} – {order.address?.pincode}
+        {order.address?.addressLine1},{order.address?.addressLine2}, {order.address?.city}, {order.address?.state} – {order.address?.pincode}
       </p>
 
       <p className="text-sm">

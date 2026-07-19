@@ -7,9 +7,9 @@ import StatusRail from "../../components/StatusRail";
 import type { OrderStatus } from "../../types";
 
 const NEXT_STATUS: Record<OrderStatus, OrderStatus[]> = {
-  pending: ["paid", "cancelled"],
-  paid: ["shipped", "cancelled"],
-  shipped: ["delivered"],
+  pending: ["processing", "cancelled"],
+  processing: ["shipped", "cancelled"],
+  shipped: ["delivered", "refunded"],
   delivered: ["refunded"],
   cancelled: [],
   refunded: [],
@@ -59,7 +59,7 @@ export default function AdminOrders() {
                 <div>
                   <p className="font-data text-sm">#{order._id.slice(-8).toUpperCase()}</p>
                   <p className="text-xs text-slate">
-                    {new Date(order.createdAt).toLocaleDateString("en-IN")} · ₹{order.total.toLocaleString("en-IN")}
+                    {new Date(order.createdAt).toLocaleDateString("en-IN")} · ₹{order.totalAmount.toLocaleString("en-IN")}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

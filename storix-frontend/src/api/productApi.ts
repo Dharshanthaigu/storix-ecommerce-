@@ -7,7 +7,7 @@ interface ProductListParams {
 }
 
 interface ProductListResponse {
-  items: Product[];
+  products: Product[]; 
   total: number;
   page: number;
 }
@@ -15,7 +15,7 @@ interface ProductListResponse {
 export const productApi = {
   list: (params?: ProductListParams) =>
     axiosClient.get<ProductListResponse>("/products", { params }),
-  getById: (id: string) => axiosClient.get<Product>(`/products/${id}`),
+  getById: (id: string) => axiosClient.get<{ product: Product }>(`/products/${id}`),
   create: (data: ProductInput) => axiosClient.post<Product>("/products", data),
   update: (id: string, data: Partial<ProductInput>) =>
     axiosClient.put<Product>(`/products/${id}`, data),

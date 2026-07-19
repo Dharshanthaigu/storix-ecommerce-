@@ -23,7 +23,7 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
             res.status(400).json({ error: parsed.error.issues[0]?.message })
             return
         }
-
+            
         if (!req.user?.userId) {
             res.status(401).json({ error: "Unauthorized" })
             return;
@@ -154,11 +154,13 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
         order.razorpayOrderId = razorpayOrder.id
         await order.save()
 
-        await orderQueue.add({
+        orderQueue.add({
             orderId: order.id,
-            email: "customer@example.com", // later: pull from req.user or populated User doc
-            phone: "9876543210",           // later: pull from user's saved phone
-        })
+            email: "customer@example.com",
+            phone: "9876543210",
+        }).catch((err) => {
+            req.log.error({ err }, "Failed to queue order confirmation notification");
+        });
 
         res.status(201).json({ message: "Order placed successfully", order });
 
@@ -190,6 +192,59 @@ export const getMyOrders = async (req: AuthRequest, res: Response): Promise<void
         res.status(500).json({ error: "Something went wrong while fetching orders" });
     }
 }
+
+// Get single order by ID (owner or admin)
+export const getOrderById = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user?.userId) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const order = await Order.findById(req.params.id)
+      .populate("items.product", "name price images")
+      .populate("address");
+
+    if (!order) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
+
+    // Only the order's owner or an admin can view it
+    const isOwner = order.user.toString() === req.user.userId;
+    const isAdmin = req.user.role === "admin";
+    if (!isOwner && !isAdmin) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+
+    res.status(200).json({ order });
+  } catch (error) {
+    req.log.error({ err: error }, "Get order by id error");
+    res.status(500).json({ error: "Something went wrong while fetching the order" });
+  }
+};
+
+// Get all orders (admin only)
+export const getAllOrders = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { status } = req.query;
+    const filter: Record<string, unknown> = {};
+    if (status && typeof status === "string") {
+      filter.status = status;
+    }
+
+    const orders = await Order.find(filter)
+      .populate("items.product", "name price")
+      .populate("address")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ items: orders, total: orders.length });
+  } catch (error) {
+    req.log.error({ err: error }, "Get all orders error");
+    res.status(500).json({ error: "Something went wrong while fetching orders" });
+  }
+};
 
 // Update order status (admin only)
 export const updateOrderStatus = async (req: AuthRequest, res: Response): Promise<void> => {

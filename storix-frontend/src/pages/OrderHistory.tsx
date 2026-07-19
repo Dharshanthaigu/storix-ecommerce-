@@ -48,7 +48,7 @@ export default function OrderHistory() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-data font-medium">₹{order.total.toLocaleString("en-IN")}</p>
+                  <p className="font-data font-medium">₹{order.totalAmount.toLocaleString("en-IN")}</p>
                   <p className="text-xs capitalize text-slate mt-0.5">{order.status}</p>
                 </div>
               </div>

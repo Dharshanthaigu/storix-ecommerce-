@@ -16,7 +16,7 @@ export default function Dashboard() {
   const shippedCount = allOrders.filter((o) => o.status === "shipped").length;
   const revenue = allOrders
     .filter((o) => o.status !== "cancelled" && o.status !== "refunded")
-    .reduce((sum, o) => sum + o.total, 0);
+    .reduce((sum, o) => sum + o.totalAmount, 0);
 
   const metrics = [
     { label: "Total orders", value: allOrders.length.toString() },

@@ -16,7 +16,7 @@ export const createAddress = async (req: AuthRequest, res: Response): Promise<vo
             return;
         }
 
-        const { fullName, phone, addressLine1, addressLine2, city, state, pincode, isDefault } = parsed.data;
+        const { fullName, phone, addressLine1, addressLine2, city, state, pincode, country, isDefault } = parsed.data;
 
         if (isDefault) {
             await Address.updateMany(
@@ -31,6 +31,7 @@ export const createAddress = async (req: AuthRequest, res: Response): Promise<vo
             addressLine1,
             city,
             state,
+            country,
             pincode,
             user: req.user.userId,
             ...(addressLine2 && { addressLine2 }),

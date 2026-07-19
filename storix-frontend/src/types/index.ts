@@ -22,35 +22,38 @@ export interface CartItem {
 
 export type OrderStatus =
   | "pending"
-  | "paid"
+  | "processing"
   | "shipped"
   | "delivered"
   | "cancelled"
   | "refunded";
 
-export interface OrderItem {
-  productId: string;
-  name: string;
+export interface OrderLineItem {
+  product: string | Product; // populated or just an id, depending on endpoint
+  quantity: number;
   price: number;
-  qty: number;
 }
 
 export interface Order {
   _id: string;
-  items: OrderItem[];
-  total: number;
+  items: OrderLineItem[];
+  totalAmount: number;
   status: OrderStatus;
   paymentStatus: string;
-  paymentOrderId: string;
+  razorpayOrderId: string;
   address: Address;
   createdAt: string;
 }
 
 export interface Address {
   _id: string;
-  line1: string;
+  fullName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2?: string;
   city: string;
   state: string;
+  country: string;
   pincode: string;
   isDefault: boolean;
 }
@@ -58,15 +61,21 @@ export interface Address {
 export interface Coupon {
   _id: string;
   code: string;
-  discountPercent: number;
-  usageCount: number;
+  discountType: "percentage" | "flat";
+  discountValue: number;
+  minOrderValue?: number;
+  maxDiscount?: number;
+  expiresAt: string;
+  usageLimit?: number;
+  usedCount: number;
+  isActive: boolean;
 }
 
 export interface User {
   _id: string;
   name: string;
   email: string;
-  role: "user" | "admin";
+  role: "customer" | "admin";
 }
 
 export interface ProductInput {

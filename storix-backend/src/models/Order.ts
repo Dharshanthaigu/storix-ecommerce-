@@ -84,9 +84,7 @@ const OrderSchema = new Schema<IOrder>(
     },
     idempotencyKey:{
       type: String,
-      required: true,
-      unique: true,
-      sparse: true
+      required: true
     },
   },
   { timestamps: true }

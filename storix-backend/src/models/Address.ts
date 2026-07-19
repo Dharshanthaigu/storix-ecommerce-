@@ -8,6 +8,7 @@ export interface IAddress extends Document {
     addressLine2: string;
     city: string;
     state: string;
+    country: string,
     pincode: string;
     isDefault: boolean;
     createAt: Date;
@@ -44,6 +45,11 @@ const AddressSchema = new Schema<IAddress>(
             trim: true,
         },
         state: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        country: {
             type: String,
             required: true,
             trim: true,

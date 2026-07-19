@@ -35,14 +35,14 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.items = action.payload.items;
+        state.items = action.payload.products;
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message ?? "Failed to load products";
       })
       .addCase(fetchProductById.fulfilled, (state, action) => {
-        state.current = action.payload;
+        state.current = action.payload.product;
       });
   },
 });

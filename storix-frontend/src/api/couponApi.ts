@@ -7,10 +7,20 @@ interface ApplyCouponResponse {
   newTotal: number;
 }
 
+interface CreateCouponPayload {
+  code: string;
+  discountType: "percentage" | "flat";
+  discountValue: number;
+  minOrderValue?: number;
+  maxDiscount?: number;
+  expiresAt: string;
+  usageLimit?: number;
+}
+
 export const couponApi = {
   apply: (code: string, cartTotal: number) =>
     axiosClient.post<ApplyCouponResponse>("/coupons/apply", { code, cartTotal }),
-  list: () => axiosClient.get<Coupon[]>("/coupons"),
-  create: (data: { code: string; discountPercent: number }) =>
-    axiosClient.post<Coupon>("/coupons", data),
+  list: () => axiosClient.get<{ coupons: Coupon[] }>("/coupons"),
+  create: (data: CreateCouponPayload) =>
+    axiosClient.post<{ message: string; coupon: Coupon }>("/coupons", data),
 };

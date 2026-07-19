@@ -7,7 +7,7 @@ interface AuthResponse {
 }
 
 export const authApi = {
-  register: (data: { name: string; email: string; password: string }) =>
+  register: (data: { name: string; email: string; password: string; phone: string }) =>
     axiosClient.post<AuthResponse>("/auth/register", data),
   login: (data: { email: string; password: string }) =>
     axiosClient.post<AuthResponse>("/auth/login", data),

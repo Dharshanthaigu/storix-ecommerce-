@@ -6,7 +6,7 @@ import { login } from "../features/auth/authSlice";
 
 export default function Login() {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  const navigate = useNavigate();   
   const { status, error } = useAppSelector((s) => s.auth);
 
   const [email, setEmail] = useState("");

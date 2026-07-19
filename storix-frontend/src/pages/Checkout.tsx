@@ -51,10 +51,12 @@ export default function Checkout() {
     }
     setPlacing(true);
     try {
+      const idempotencyKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const order = await dispatch(
         createOrder({
-          items: items.map((i) => ({ productId: i.productId, name: i.name, price: i.price, qty: i.qty })),
-          addressId: activeAddressId,
+          items: items.map((i) => ({ product: i.productId, quantity: i.qty })),
+          address: activeAddressId,
+          idempotencyKey,
           couponCode: couponCode ?? undefined,
         })
       ).unwrap();
@@ -64,7 +66,7 @@ export default function Checkout() {
         amount: total * 100,
         currency: "INR",
         name: "Storix",
-        order_id: order.paymentOrderId,
+        order_id: order.razorpayOrderId,
         handler: () => {
           toast.success("Payment received — order placed");
           dispatch(clearCart());
@@ -121,7 +123,7 @@ export default function Checkout() {
               onChange={() => setSelectedAddressId(addr._id)}
             />
             <span className="text-sm leading-relaxed">
-              {addr.line1}, {addr.city}, {addr.state} – {addr.pincode}
+              {addr.addressLine1}, {addr.addressLine2}, {addr.city}, {addr.state} – {addr.pincode}
               {addr.isDefault && <span className="ml-2 text-xs text-slate">Default</span>}
             </span>
           </label>

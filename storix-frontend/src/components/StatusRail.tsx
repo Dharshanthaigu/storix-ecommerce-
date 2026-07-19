@@ -1,11 +1,11 @@
-type RailStatus = "in-stock" | "low-stock" | "out-of-stock" | "pending" | "paid" | "shipped" | "delivered" | "cancelled" | "refunded";
+type RailStatus = "in-stock" | "low-stock" | "out-of-stock" | "pending" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
 
 const railColor: Record<RailStatus, string> = {
   "in-stock": "bg-success",
   "low-stock": "bg-warning",
   "out-of-stock": "bg-danger",
   pending: "bg-warning",
-  paid: "bg-slate",
+  processing: "bg-slate",
   shipped: "bg-signal",
   delivered: "bg-success",
   cancelled: "bg-danger",

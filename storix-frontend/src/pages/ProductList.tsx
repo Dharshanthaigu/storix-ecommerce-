@@ -13,7 +13,7 @@ export default function ProductList() {
   const [category, setCategory] = useState("");
 
   useEffect(() => {
-    categoryApi.list().then((res) => setCategories(res.data));
+    categoryApi.list().then((res) => setCategories(res.data.category));
   }, []);
 
   useEffect(() => {

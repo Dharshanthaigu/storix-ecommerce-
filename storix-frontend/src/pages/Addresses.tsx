@@ -11,7 +11,16 @@ import {
 import Loader from "../components/Loader";
 import type { Address } from "../types";
 
-const emptyForm = { line1: "", city: "", state: "", pincode: "" };
+const emptyForm = {
+  fullName: "",
+  phone: "",
+  addressLine1: "",
+  addressLine2: "",
+  city: "",
+  state: "",
+  country: "India",
+  pincode: "",
+};
 
 export default function Addresses() {
   const dispatch = useAppDispatch();
@@ -42,13 +51,22 @@ export default function Addresses() {
         toast.success("Address added");
       }
       resetForm();
-    } catch {
-      toast.error("Could not save address");
+    } catch (err) {
+      toast.error(typeof err === "string" ? err : "Could not save address");
     }
   };
 
   const handleEdit = (addr: Address) => {
-    setForm({ line1: addr.line1, city: addr.city, state: addr.state, pincode: addr.pincode });
+    setForm({
+      fullName: addr.fullName,
+      phone: addr.phone,
+      addressLine1: addr.addressLine1,
+      addressLine2: addr.addressLine2 ?? "",
+      city: addr.city,
+      state: addr.state,
+      country: addr.country,
+      pincode: addr.pincode,
+    });
     setEditingId(addr._id);
     setShowForm(true);
   };
@@ -71,16 +89,61 @@ export default function Addresses() {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="border border-mist rounded-xl p-5 mb-6 grid gap-3">
-          {(["line1", "city", "state", "pincode"] as const).map((field) => (
-            <input
-              key={field}
-              required
-              placeholder={field === "line1" ? "Address line" : field[0].toUpperCase() + field.slice(1)}
-              value={form[field]}
-              onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-              className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink"
-            />
-          ))}
+          <input
+            required
+            placeholder="Full name"
+            value={form.fullName}
+            onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+            className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink"
+          />
+          <input
+            required
+            placeholder="10-digit phone number"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink"
+          />
+          <input
+            required
+            placeholder="Address line 1"
+            value={form.addressLine1}
+            onChange={(e) => setForm({ ...form, addressLine1: e.target.value })}
+            className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink"
+          />
+          <input
+            placeholder="Address line 2 (optional)"
+            value={form.addressLine2}
+            onChange={(e) => setForm({ ...form, addressLine2: e.target.value })}
+            className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink"
+          />
+          <input
+            required
+            placeholder="City"
+            value={form.city}
+            onChange={(e) => setForm({ ...form, city: e.target.value })}
+            className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink"
+          />
+          <input
+            required
+            placeholder="State"
+            value={form.state}
+            onChange={(e) => setForm({ ...form, state: e.target.value })}
+            className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink"
+          />
+          <input
+            required
+            placeholder="Country"
+            value={form.country}
+            onChange={(e) => setForm({ ...form, country: e.target.value })}
+            className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink"
+          />
+          <input
+            required
+            placeholder="6-digit pincode"
+            value={form.pincode}
+            onChange={(e) => setForm({ ...form, pincode: e.target.value })}
+            className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink"
+          />
           <div className="flex gap-2 mt-1">
             <button type="submit" className="bg-ink text-white rounded-full px-5 py-2 text-sm hover:bg-signal transition-colors">
               {editingId ? "Update" : "Save"}
@@ -96,7 +159,10 @@ export default function Addresses() {
         {items.map((addr) => (
           <div key={addr._id} className="border border-mist rounded-xl p-4">
             <p className="text-sm leading-relaxed">
-              {addr.line1}, {addr.city}, {addr.state} – {addr.pincode}
+              {addr.fullName} · {addr.phone}
+              <br />
+              {addr.addressLine1}
+              {addr.addressLine2 && `, ${addr.addressLine2}`}, {addr.city}, {addr.state}, {addr.country} – {addr.pincode}
               {addr.isDefault && <span className="ml-2 text-xs text-signal font-medium">Default</span>}
             </p>
             <div className="flex gap-4 mt-2 text-xs">

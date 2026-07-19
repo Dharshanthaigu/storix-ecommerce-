@@ -12,14 +12,14 @@ const initialState: AddressState = { items: [], status: "idle", error: null };
 
 export const fetchAddresses = createAsyncThunk("address/fetchAll", async () => {
   const { data } = await addressApi.list();
-  return data;
+  return data.address;
 });
 
 export const createAddress = createAsyncThunk(
   "address/create",
   async (payload: Omit<Address, "_id" | "isDefault">) => {
     const { data } = await addressApi.create(payload);
-    return data;
+    return data.address;
   }
 );
 
@@ -27,7 +27,7 @@ export const updateAddress = createAsyncThunk(
   "address/update",
   async ({ id, data }: { id: string; data: Partial<Address> }) => {
     const res = await addressApi.update(id, data);
-    return res.data;
+    return res.data.address;
   }
 );
 
@@ -38,7 +38,7 @@ export const removeAddress = createAsyncThunk("address/remove", async (id: strin
 
 export const setDefaultAddress = createAsyncThunk("address/setDefault", async (id: string) => {
   const { data } = await addressApi.setDefault(id);
-  return data;
+  return data.address;
 });
 
 const addressSlice = createSlice({

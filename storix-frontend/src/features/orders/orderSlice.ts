@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { orderApi } from "../../api/orderApi";
-import type { Order, OrderStatus, OrderItem } from "../../types/index";
+import type { Order, OrderStatus } from "../../types/index";
 
 interface OrderState {
   myOrders: Order[];
@@ -20,20 +20,20 @@ const initialState: OrderState = {
 
 export const createOrder = createAsyncThunk(
   "orders/create",
-  async (payload: { items: OrderItem[]; addressId: string; couponCode?: string }) => {
+  async (payload: { items: { product: string; quantity: number }[]; address: string; idempotencyKey: string; couponCode?: string }) => {
     const { data } = await orderApi.create(payload);
-    return data;
+    return data.order;
   }
 );
 
 export const fetchMyOrders = createAsyncThunk("orders/fetchMine", async () => {
   const { data } = await orderApi.myOrders();
-  return data;
+  return data.orders;
 });
 
 export const fetchOrderById = createAsyncThunk("orders/fetchOne", async (id: string) => {
   const { data } = await orderApi.getById(id);
-  return data;
+  return data.order;
 });
 
 export const fetchAllOrders = createAsyncThunk(
@@ -48,7 +48,7 @@ export const updateOrderStatus = createAsyncThunk(
   "orders/updateStatus",
   async ({ id, status }: { id: string; status: OrderStatus }) => {
     const { data } = await orderApi.updateStatus(id, status);
-    return data;
+    return data.order;
   }
 );
 

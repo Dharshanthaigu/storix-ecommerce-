@@ -22,4 +22,13 @@ Content-Type: application/json
   "password": "Test@1234"
 }
 
+### Login as Admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@storix.test",
+  "password": "Admin@1234"
+}
+
 

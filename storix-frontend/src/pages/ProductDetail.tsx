@@ -27,10 +27,13 @@ export default function ProductDetail() {
       : { text: "In stock", color: "text-success" };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 grid md:grid-cols-2 gap-12">
-      <ImageCarousel images={product.images} />
+    <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-2 gap-12">
+      <ImageCarousel images={product.images} /> 
+      {/* <div className="bg-mist h-80 rounded-lg flex items-center justify-center text-slate text-sm">
+        Image carousel temporarily disabled for testing
+      </div> */}
 
-      <div className="md:sticky md:top-24 h-fit">
+      <div className="md:sticky md:top-24 md:h-fit">
         <p className="text-xs text-slate uppercase tracking-wide mb-2">{product.category?.name}</p>
         <h1 className="font-display text-3xl font-bold leading-tight mb-3">{product.name}</h1>
 

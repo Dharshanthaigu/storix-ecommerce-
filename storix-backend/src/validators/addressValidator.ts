@@ -7,6 +7,7 @@ export const createAddressSchema = z.object({
     addressLine2: z.string().trim().optional(),
     city: z.string().min(2, "City is required").trim(),
     state: z.string().min(2, "State is required").trim(),
+    country: z.string().min(2, "Country is required").trim(),
     pincode: z.string().regex(/^\d{6}$/, "Enter a valid 6-digit pincode"),
     isDefault: z.boolean().optional(),
 })
@@ -18,6 +19,7 @@ export const updateAddressSchema = z.object({
     addressLine2: z.string().trim().optional(),
     city: z.string().min(2).trim().optional(),
     state: z.string().min(2).trim().optional(),
+    country:z.string().min(2).trim().optional(),
     pincode: z.string().regex(/^\d{6}$/).optional(),
     isDefault: z.boolean().optional(),
 });

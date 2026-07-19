@@ -12,13 +12,14 @@ export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const result = await dispatch(register({ name, email, password }));
+    const result = await dispatch(register({ name, email, password, phone }));
     if (register.fulfilled.match(result)) {
-      toast.success("Account created");
-      navigate("/");
+      toast.success("Account created — please log in");
+      navigate("/login");
     } else {
       toast.error((result.payload as string) ?? "Registration failed");
     }
@@ -44,9 +45,17 @@ export default function Register() {
           className="border rounded px-3 py-2"
         />
         <input
+          type="tel"
+          required
+          placeholder="10-digit mobile number"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="border rounded px-3 py-2"
+        />
+        <input
           type="password"
           required
-          minLength={6}
+          minLength={8}
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

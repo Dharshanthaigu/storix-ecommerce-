@@ -9,12 +9,14 @@ export default function AdminCoupons() {
   const [loading, setLoading] = useState(true);
   const [code, setCode] = useState("");
   const [discountPercent, setDiscountPercent] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
+
 
   const load = async () => {
     setLoading(true);
     try {
       const { data } = await couponApi.list();
-      setCoupons(data);
+      setCoupons(data.coupons);
     } catch {
       toast.error("Could not load coupons");
     } finally {
@@ -27,17 +29,33 @@ export default function AdminCoupons() {
     load();
   }, []);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code.trim() || !discountPercent) return;
+
+    if (!expiresAt) {
+      toast.error("Please select an expiry date");
+      return;
+    }
+
+    const selectedDate = new Date(expiresAt);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // ignore time, compare just the date
+
+    if (selectedDate < today) {
+      toast.error("Expiry date cannot be in the past");
+      return;
+    }
+
     try {
-      await couponApi.create({ code: code.trim().toUpperCase(), discountPercent: Number(discountPercent) });
+      await couponApi.create({
+        code: code.trim().toUpperCase(),
+        discountType: "percentage",
+        discountValue: Number(discountPercent),
+        expiresAt: new Date(expiresAt).toISOString(),
+      });
       toast.success("Coupon created");
-      setCode("");
-      setDiscountPercent("");
-      load();
-    } catch {
-      toast.error("Could not create coupon");
+    } catch (err) {
+      // your existing error handling
     }
   };
 
@@ -63,6 +81,13 @@ export default function AdminCoupons() {
           onChange={(e) => setDiscountPercent(e.target.value)}
           className="w-24 border border-mist rounded-lg px-3 py-2 text-sm font-data focus:outline-none focus:border-ink"
         />
+        <input
+          type="date"
+          value={expiresAt}
+          min={new Date().toISOString().split("T")[0]}
+          onChange={(e) => setExpiresAt(e.target.value)}
+          className="border border-mist rounded-lg px-3 py-2 text-sm font-data focus:outline-none focus:border-ink"
+        />
         <button type="submit" className="bg-ink text-white rounded-full px-5 py-2 text-sm hover:bg-signal transition-colors">
           Create
         </button>
@@ -72,7 +97,9 @@ export default function AdminCoupons() {
         {coupons.map((c) => (
           <div key={c._id} className="flex items-center justify-between px-4 py-3">
             <span className="font-data font-medium">{c.code}</span>
-            <span className="text-xs text-slate">{c.discountPercent}% off · used {c.usageCount}×</span>
+            <span className="text-xs text-slate">
+              {c.discountValue}{c.discountType === "percentage" ? "%" : ""} off · used {c.usedCount}×
+            </span>
           </div>
         ))}
         {coupons.length === 0 && <p className="text-slate text-sm px-4 py-6">No coupons yet.</p>}

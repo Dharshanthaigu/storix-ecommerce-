@@ -14,7 +14,7 @@ export default function AdminCategories() {
     setLoading(true);
     try {
       const { data } = await categoryApi.list();
-      setCategories(data);
+      setCategories(data.category);
     } catch {
       toast.error("Could not load categories");
     } finally {
