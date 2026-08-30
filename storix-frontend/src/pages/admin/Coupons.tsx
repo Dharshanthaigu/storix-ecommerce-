@@ -1,4 +1,4 @@
-import { useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { couponApi } from "../../api/couponApi";
 import type { Coupon } from "../../types";
@@ -107,3 +107,4 @@ export default function AdminCoupons() {
     </div>
   );
 }
+

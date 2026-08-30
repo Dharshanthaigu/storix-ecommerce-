@@ -73,21 +73,23 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
 
     const cacheKey = category ? `products:category:${category}` : "products:all";
 
-    // check cache first
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-      console.log("[Cache] Serving products from cache");
-      res.status(200).json({ products: JSON.parse(cached) });
-      return;
+    try {
+      const cached = await redisClient.get(cacheKey);
+      if (cached) {
+        res.status(200).json({ products: JSON.parse(cached) });
+        return;
+      }
+    } catch (cacheErr) {
+      console.log("[Cache] Redis unavailable, falling back to DB:", cacheErr);
     }
-
-    // Cache miss — fetch from DB
-    console.log("[Cache] Cache miss — fetching from MongoDB");
 
     const products = await Product.find(filter).populate("category", "name");
 
-    // store in cache, 60 second TTL
-    await redisClient.set(cacheKey, JSON.stringify(products), "EX", 60);
+    try {
+      await redisClient.set(cacheKey, JSON.stringify(products), "EX", 60);
+    } catch (cacheSetErr) {
+      console.log("[Cache] Failed to write cache:", cacheSetErr);
+    }
 
     res.status(200).json({ products });
   } catch (error) {

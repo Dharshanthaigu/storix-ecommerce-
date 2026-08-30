@@ -1,0 +1,15 @@
+{
+  "rest-client.environmentVariables": {
+    "$shared": {
+      "baseUrl": "http://localhost:5000",
+      "adminToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTU5ZDgyZGZiMGJmNjAzMzgyZDBmYjkiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODQyNzU0ODAsImV4cCI6MTc4NDg4MDI4MH0.arpd_sIvaAhB1ZOApluITBiSnhof4cQ5wdhwV-W1EIA",
+      "userToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTU5ZTE0YzU4YWQ2NzMzYWE1NTgxNjUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE3ODQyNzU5MTksImV4cCI6MTc4NDg4MDcxOX0.Mg3LrpxGSW1WLtcmRyqLNEKnQVGhdDXAuUWv-JBKaCE",
+      "categoryId": "6a59d82ffb0bf603382d0fc2",
+      "productId": "6a59f005d962f2585e60534a",
+      "addressId": "6a59efc2d962f2585e605349",  
+      "ticketId": "",
+      "orderId":"",
+    },
+    "dev": {}
+  }
+}

@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+echo "🔍 Checking backend build..."
+cd storix-backend && npm run build
+if [ $? -ne 0 ]; then
+  echo "❌ Backend build failed. Push blocked."
+  exit 1
+fi
+cd ..
+
+echo "🔍 Checking frontend build..."
+cd storix-frontend && npm run build
+if [ $? -ne 0 ]; then
+  echo "❌ Frontend build failed. Push blocked."
+  exit 1
+fi
+cd ..
+
+echo "✅ Both builds passed."
