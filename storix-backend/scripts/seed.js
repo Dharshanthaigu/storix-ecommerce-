@@ -22,9 +22,15 @@ const productSchema = new mongoose.Schema({
   name: String,
   description: String,
   price: Number,
+  originalPrice: Number,
   stock: Number,
   category: mongoose.Schema.Types.ObjectId,
   images: [String],
+  brand: String,
+  rating: Number,
+  reviewCount: Number,
+  sku: String,
+  isFeatured: Boolean,
 }, { timestamps: true });
 
 const addressSchema = new mongoose.Schema({
@@ -59,12 +65,20 @@ const Address = mongoose.model("Address", addressSchema);
 const Coupon = mongoose.model("Coupon", couponSchema);
 
 const CATEGORY_NAMES = [
-  "Electronics", "Fashion", "Home & Kitchen", "Books",
-  "Sports & Fitness", "Beauty & Personal Care", "Toys & Games",
-  "Grocery", "Automotive", "Pet Supplies",
+  "Electronics", "Fashion", "Home & Kitchen",
+  "Sports & Fitness", "Beauty & Personal Care",
+  "Grocery", "Automotive",
 ];
 
-const PRODUCTS_PER_CATEGORY = 12; // 12 x 10 categories = 120 products
+const CATEGORY_TO_DUMMYJSON = {
+  "Electronics": ["smartphones", "laptops", "tablets", "mobile-accessories"],
+  "Fashion": ["mens-shirts", "mens-shoes", "womens-dresses", "womens-shoes", "tops", "sunglasses", "womens-bags", "womens-jewellery", "mens-watches", "womens-watches"],
+  "Home & Kitchen": ["furniture", "home-decoration", "kitchen-accessories"],
+  "Sports & Fitness": ["sports-accessories"],
+  "Beauty & Personal Care": ["beauty", "fragrances", "skincare"],
+  "Grocery": ["groceries"],
+  "Automotive": ["automotive", "motorcycle", "vehicle"],
+};
 
 async function seed() {
   await mongoose.connect(MONGO_URI);
@@ -113,24 +127,55 @@ async function seed() {
     categories.push(category);
   }
 
-  console.log("Creating products with real images...");
-  let imgSeed = 0;
+  console.log("Fetching real product data from DummyJSON per category...");
+  const TARGET_PRODUCT_COUNT = 600;
+  const PER_CATEGORY_TARGET = Math.ceil(TARGET_PRODUCT_COUNT / categories.length);
+
+  const categoryProductPools = {};
+  for (const catName of CATEGORY_NAMES) {
+    const slugs = CATEGORY_TO_DUMMYJSON[catName];
+    let pool = [];
+    for (const slug of slugs) {
+      const res = await fetch(`https://dummyjson.com/products/category/${slug}`);
+      const data = await res.json();
+      pool = pool.concat(data.products || []);
+    }
+    categoryProductPools[catName] = pool;
+    console.log(`  ${catName}: fetched ${pool.length} real products`);
+  }
+
+  console.log("Creating products with matched real names and images...");
   for (const category of categories) {
-    for (let i = 0; i < PRODUCTS_PER_CATEGORY; i++) {
+    const pool = categoryProductPools[category.name];
+    if (!pool || pool.length === 0) continue;
+
+    for (let i = 0; i < PER_CATEGORY_TARGET; i++) {
+      const source = pool[i % pool.length];
+
+      const price = source.price;
+      const hasDiscount = source.discountPercentage > 0;
+      const originalPrice = hasDiscount
+        ? parseFloat((price / (1 - source.discountPercentage / 100)).toFixed(2))
+        : undefined;
+
       await Product.create({
-        name: faker.commerce.productName(),
-        description: faker.commerce.productDescription(),
-        price: parseFloat(faker.commerce.price({ min: 100, max: 8000 })),
-        stock: faker.number.int({ min: 0, max: 150 }),
+        name: source.title,
+        description: source.description,
+        price,
+        originalPrice,
+        stock: source.stock ?? faker.number.int({ min: 0, max: 150 }),
         category: category._id,
-        images: [
-          `https://picsum.photos/seed/storix-${imgSeed}-a/600/600`,
-          `https://picsum.photos/seed/storix-${imgSeed}-b/600/600`,
-        ],
+        images: source.images?.length ? source.images.slice(0, 2) : [source.thumbnail],
+        brand: source.brand || faker.company.name(),
+        rating: source.rating ?? parseFloat(faker.number.float({ min: 2.5, max: 5, fractionDigits: 1 }).toFixed(1)),
+        reviewCount: faker.number.int({ min: 0, max: 5000 }),
+        sku: `SKU-${faker.string.alphanumeric(8).toUpperCase()}`,
+        isFeatured: faker.datatype.boolean({ probability: 0.1 }),
       });
-      imgSeed++;
     }
   }
+
+
 
   console.log("Creating addresses for test users...");
   for (const user of users) {
@@ -171,7 +216,7 @@ async function seed() {
     },
   ]);
 
-  const totalProducts = categories.length * PRODUCTS_PER_CATEGORY;
+  const totalProducts = await Product.countDocuments();
 
   console.log("\n✅ Seed complete!");
   console.log(`Admin login: admin@storix.test / Admin@1234`);

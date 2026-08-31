@@ -3,9 +3,11 @@ import Redis from "ioredis";
 const redisClient = process.env.REDIS_URL
   ? new Redis(process.env.REDIS_URL, {
       maxRetriesPerRequest: 3,
-      enableReadyCheck: false,
+      enableReadyCheck: true,
+      connectTimeout: 10000,
+      keepAlive: 10000,
       retryStrategy(times) {
-        return Math.min(times * 100, 2000);
+        return Math.min(times * 200, 3000);
       },
     })
   : new Redis({
@@ -14,11 +16,11 @@ const redisClient = process.env.REDIS_URL
     });
 
 redisClient.on("connect", () => {
-    console.log("Redis client connected");
-})
+  console.log("Redis client connected");
+});
 
 redisClient.on("error", (err) => {
-    console.log("Redis client error", err)
-})
+  console.log("Redis client error:", err.message);
+});
 
-export default redisClient
+export default redisClient;

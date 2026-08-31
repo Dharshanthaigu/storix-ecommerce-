@@ -6,6 +6,15 @@ import { createProductSchema, updateProductSchema } from "../validators/productV
 import redisClient from "../config/redisClient";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("Redis timeout")), ms)
+    ),
+  ]);
+}
+
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
   try {
     const parsed = createProductSchema.safeParse(req.body);
@@ -74,7 +83,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     const cacheKey = category ? `products:category:${category}` : "products:all";
 
     try {
-      const cached = await redisClient.get(cacheKey);
+      const cached = await withTimeout(redisClient.get(cacheKey), 500); // CHANGED
       if (cached) {
         res.status(200).json({ products: JSON.parse(cached) });
         return;
@@ -86,7 +95,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     const products = await Product.find(filter).populate("category", "name");
 
     try {
-      await redisClient.set(cacheKey, JSON.stringify(products), "EX", 60);
+      await withTimeout(redisClient.set(cacheKey, JSON.stringify(products), "EX", 60), 2000); // CHANGED
     } catch (cacheSetErr) {
       console.log("[Cache] Failed to write cache:", cacheSetErr);
     }
