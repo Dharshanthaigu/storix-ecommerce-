@@ -6,6 +6,15 @@ import { createProductSchema, updateProductSchema } from "../validators/productV
 import redisClient from "../config/redisClient";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("Redis timeout")), ms)
+    ),
+  ]);
+}
+
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
   try {
     const parsed = createProductSchema.safeParse(req.body);
@@ -47,9 +56,9 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
       ...(imageUrls.length > 0 && { images: imageUrls }),
     })
 
-    await redisClient.del("products:all");
+    const keys = await redisClient.keys("products:*");
+    if (keys.length > 0) await redisClient.del(...keys);
     res.status(201).json({ message: "Product created successfully", product })
-
   }
   catch (error) {
     console.log("Create product error:", error)
@@ -60,33 +69,43 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
 // Get all products (public)
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
   try {
+    const { category } = req.query;
 
-    const cacheKey = "products:all"
-
-    //check cache first
-    const cached = await redisClient.get(cacheKey)
-    if (cached) {
-      console.log("[Cache] Serving products from cache");
-      res.status(200).json({ products: JSON.parse(cached) })
-      return;
+    const filter: Record<string, unknown> = {};
+    if (category && typeof category === "string") {
+      if (!mongoose.Types.ObjectId.isValid(category)) {
+        res.status(400).json({ error: "Invalid category ID" });
+        return;
+      }
+      filter.category = category;
     }
 
-    // Cache miss — fetch from DB
-    console.log("[Cache] Cache miss — fetching from MongoDB");
+    const cacheKey = category ? `products:category:${category}` : "products:all";
 
+    try {
+      const cached = await withTimeout(redisClient.get(cacheKey), 500); // CHANGED
+      if (cached) {
+        res.status(200).json({ products: JSON.parse(cached) });
+        return;
+      }
+    } catch (cacheErr) {
+      console.log("[Cache] Redis unavailable, falling back to DB:", cacheErr);
+    }
 
-    const products = await Product.find().populate("category", "name");
+    const products = await Product.find(filter).populate("category", "name");
 
-    //store in cache in 60seconds TTL 
-    await redisClient.set(cacheKey, JSON.stringify(products), "EX", 60)
+    try {
+      await withTimeout(redisClient.set(cacheKey, JSON.stringify(products), "EX", 60), 2000); // CHANGED
+    } catch (cacheSetErr) {
+      console.log("[Cache] Failed to write cache:", cacheSetErr);
+    }
 
     res.status(200).json({ products });
-  }
-  catch (error) {
-    console.log("Get product error:", error)
+  } catch (error) {
+    console.log("Get product error:", error);
     res.status(500).json({ error: "Something went wrong while fetching product" });
   }
-}
+};
 
 // Get single product (public)
 export const getProductById = async (req: Request, res: Response): Promise<void> => {
@@ -122,7 +141,8 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
       res.status(404).json({ error: "Product not found" });
       return;
     }
-    await redisClient.del("products:all");
+    const keys = await redisClient.keys("products:*");
+    if (keys.length > 0) await redisClient.del(...keys);
     res.status(200).json({ message: "Product updated successfully", product });
   } catch (error) {
     console.log("Update product error:", error);
@@ -138,7 +158,8 @@ export const deleteProduct = async (req: Request, res: Response): Promise<void> 
       res.status(404).json({ error: "Product not found" });
       return;
     }
-    await redisClient.del("products:all");
+    const keys = await redisClient.keys("products:*");
+    if (keys.length > 0) await redisClient.del(...keys);
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     console.log("Delete product error:", error);
