@@ -8,9 +8,15 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  originalPrice?: number;
   stock: number;
   images: string[];
   category: Category;
+  brand?: string;
+  rating?: number;
+  reviewCount?: number;
+  sku?: string;
+  isFeatured?: boolean;
 }
 
 export interface CartItem {
@@ -82,7 +88,13 @@ export interface ProductInput {
   name: string;
   description: string;
   price: number;
+  originalPrice?: number;
   stock: number;
   category: string; // category id, not the populated object
   images: string[];
+  brand?: string;
+  rating?: number;
+  reviewCount?: number;
+  sku?: string;
+  isFeatured?: boolean;
 }

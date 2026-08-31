@@ -7,7 +7,10 @@ import { getErrorMessage } from "../../utils/errorMessage";
 import Loader from "../../components/Loader";
 import StatusRail from "../../components/StatusRail";
 
-const emptyForm = { name: "", description: "", price: "", stock: "", category: "", images: "" };
+const emptyForm = {
+  name: "", description: "", price: "", stock: "", category: "", images: "",
+  brand: "", rating: "", reviewCount: "", originalPrice: "", sku: "", isFeatured: false,
+};
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -50,6 +53,12 @@ export default function AdminProducts() {
       stock: Number(form.stock),
       category: form.category,
       images: form.images.split(",").map((s) => s.trim()).filter(Boolean),
+      brand: form.brand || undefined,
+      rating: form.rating ? Number(form.rating) : undefined,
+      reviewCount: form.reviewCount ? Number(form.reviewCount) : undefined,
+      originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined,
+      sku: form.sku || undefined,
+      isFeatured: form.isFeatured,
     };
     try {
       if (editingId) {
@@ -74,6 +83,12 @@ export default function AdminProducts() {
       stock: String(p.stock),
       category: p.category._id,
       images: p.images.join(", "),
+      brand: p.brand ?? "",
+      rating: p.rating !== undefined ? String(p.rating) : "",
+      reviewCount: p.reviewCount !== undefined ? String(p.reviewCount) : "",
+      originalPrice: p.originalPrice !== undefined ? String(p.originalPrice) : "",
+      sku: p.sku ?? "",
+      isFeatured: p.isFeatured ?? false,
     });
     setEditingId(p._id);
     setShowForm(true);
@@ -113,6 +128,19 @@ export default function AdminProducts() {
               Cancel
             </button>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <input placeholder="Brand" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink" />
+            <input placeholder="SKU" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink" />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <input type="number" min={0} max={5} step={0.1} placeholder="Rating (0-5)" value={form.rating} onChange={(e) => setForm({ ...form, rating: e.target.value })} className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink font-data" />
+            <input type="number" min={0} placeholder="Review count" value={form.reviewCount} onChange={(e) => setForm({ ...form, reviewCount: e.target.value })} className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink font-data" />
+            <input type="number" min={0} placeholder="Original price" value={form.originalPrice} onChange={(e) => setForm({ ...form, originalPrice: e.target.value })} className="border border-mist rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-ink font-data" />
+          </div>
+          <label className="flex items-center gap-2 text-sm text-slate">
+            <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })} />
+            Featured product
+          </label>
         </form>
       )}
 
